@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
   }
 
   gst_bin_add_many(GST_BIN(data.pipeline), source1, data.sink, converter2, data.source, sink, NULL);
-  g_object_set(source1, "location", "rtmp://192.168.1.124:1935/yanked/stream-meu", NULL);
+  g_object_set(source1, "location", "rtmp://192.168.1.124:1935/yanked/stream-climax", NULL);
 
   if(!gst_element_link(source1, data.source)) {
     g_printerr("Could not link source to the decode bin.\n");
