@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
   right_stream.source = gst_element_factory_make("decodebin", "right_decoder");
   right_stream.sink = gst_element_factory_make("videoconvert", "right_converter");
 
-  data.pipeline = gst_pipeline_new("single");
+  data.pipeline = gst_pipeline_new("split");
   GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(data.pipeline), GST_DEBUG_GRAPH_SHOW_MEDIA_TYPE, "afterparse");
 
   if(!data.pipeline || !source1 || !source2 || !left_stream.sink || !left_videobox || \
