@@ -172,10 +172,10 @@ int main(int argc, char *argv[]) {
 		   top_right.source, top_right.sink, bottom_left.source, bottom_left.sink, \
 		   bottom_right.source, bottom_right.sink, NULL);
 
-  g_object_set(rtmp_source4, "location", "rtmp://192.168.1.124:1935/yanked/stream-11111111-1111-1111-1111-111111111111", NULL);
+  g_object_set(rtmp_source1, "location", "rtmp://192.168.1.124:1935/yanked/stream-climax", NULL);
   g_object_set(rtmp_source2, "location", "rtmp://192.168.1.124:1935/yanked/stream-countdown", NULL);
   g_object_set(rtmp_source3, "location", "rtmp://192.168.1.124:1935/yanked/stream-meu", NULL);
-  g_object_set(rtmp_source1, "location", "rtmp://192.168.1.124:1935/yanked/stream-kisser", NULL);
+  g_object_set(rtmp_source4, "location", "rtmp://192.168.1.124:1935/yanked/stream-kisser", NULL);
 
   if(!gst_element_link(rtmp_source1, top_left.source)) {
     g_printerr("Could not link the top left RTMP source to its decoder bin.\n");
