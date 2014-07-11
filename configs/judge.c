@@ -178,6 +178,7 @@ int main(int argc, char *argv[]) {
 		   judge3_stream, judge3_converter, judge3_source_sink.source, judge3_source_sink.sink, NULL);
 
   g_object_set(main_stream, "location", "rtmp://192.168.1.124:1935/yanked/stream-climax", NULL);
+  /* g_object_set(main_stream, "location", "rtmp://192.168.1.124:1935/yanked/stream-11111111-1111-1111-1111-111111111111", NULL); */
   g_object_set(judge1_stream, "location", "rtmp://192.168.1.124:1935/yanked/stream-meu", NULL);
   g_object_set(judge2_stream, "location", "rtmp://192.168.1.124:1935/yanked/stream-kisser", NULL);
   g_object_set(judge3_stream, "location", "rtmp://192.168.1.124:1935/yanked/stream-countdown", NULL);
