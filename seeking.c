@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  g_object_set(data.playbin, "uri", "file:///vagrant/ra.mp4", NULL);
+  g_object_set(data.playbin, "uri", "file:///code/ra.mp4", NULL);
   g_object_set(data.playbin, "video-sink", video_sink, NULL);
 
   return_value = gst_element_set_state(data.playbin, GST_STATE_PLAYING);
