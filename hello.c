@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
 
   gst_init(&argc, &argv);
 
-  pipeline = gst_parse_launch("playbin uri=file:///vagrant/ra.mp4 video-sink=ximagesink", NULL);
+  pipeline = gst_parse_launch("playbin uri=file:///code/ra.mp4 video-sink=ximagesink", NULL);
   gst_element_set_state(pipeline, GST_STATE_PLAYING);
   bus = gst_element_get_bus(pipeline);
   message = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);

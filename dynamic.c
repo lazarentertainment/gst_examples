@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  g_object_set(data.source, "uri", "file:///vagrant/elephants-dream.webm", NULL);
+  g_object_set(data.source, "uri", "file:///home/vagrant/sintel_trailer-480p.webm", NULL);
   g_signal_connect(data.source, "pad-added", G_CALLBACK(pad_added_handler), &data);
   return_value = gst_element_set_state(data.pipeline, GST_STATE_PLAYING);
 
