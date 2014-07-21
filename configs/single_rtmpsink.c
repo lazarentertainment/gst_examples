@@ -99,9 +99,8 @@ static void cb_message (GstBus *bus, GstMessage *msg, CustomData *data) {
 
 int main(int argc, char *argv[]) {
   GstElement *source1;
-  GstElement *converter2, *encoder, *muxer, *sink;
+  GstElement *encoder, *muxer, *sink;
   GstBus *bus;
-  GstCaps *caps;
   GstStateChangeReturn return_value;
   CustomData data;
   GMainLoop *loop;
@@ -110,23 +109,21 @@ int main(int argc, char *argv[]) {
 
   memset(&data, 0, sizeof(data));
   source1 = gst_element_factory_make("rtmpsrc", "source1");
-  converter2 = gst_element_factory_make("videoconvert", "converter2");
   encoder = gst_element_factory_make("x264enc", "encoder");
   muxer = gst_element_factory_make("flvmux", "muxer");
   sink = gst_element_factory_make("rtmpsink", "sink");
-  caps = gst_caps_new_simple("video/x-raw", "format", G_TYPE_STRING, "AYUV", NULL);
   
   data.source = gst_element_factory_make("decodebin", "decoder1");
   data.sink = gst_element_factory_make("videoconvert", "converter1");
   data.pipeline = gst_pipeline_new("single");
   GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(data.pipeline), GST_DEBUG_GRAPH_SHOW_MEDIA_TYPE, "afterparse");
 
-  if(!data.pipeline || !source1 || !data.sink || !converter2 || !data.source || !encoder || !muxer || !sink) {
+  if(!data.pipeline || !source1 || !data.sink || !data.source || !encoder || !muxer || !sink) {
     g_printerr("Could not build an element\n");
     return -1;
   }
 
-  gst_bin_add_many(GST_BIN(data.pipeline), source1, data.sink, converter2, data.source, encoder, muxer, sink, NULL);
+  gst_bin_add_many(GST_BIN(data.pipeline), source1, data.sink, data.source, encoder, muxer, sink, NULL);
   g_object_set(source1, "location", "rtmp://192.168.1.124:1935/yanked/rabbit", NULL);
 
   if(!gst_element_link(source1, data.source)) {
@@ -135,14 +132,8 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  if(!gst_element_link_filtered(data.sink, converter2, caps)) {
-    g_printerr("Could not link converter 1 to converter 2 using the capabilities.\n");
-    gst_object_unref(data.pipeline);
-    return -1;
-  }
-
-  if(!gst_element_link(converter2, encoder)) {
-    g_printerr("Could not link converter 2 to the x264 encoder.\n");
+  if(!gst_element_link(data.sink, encoder)) {
+    g_printerr("Could not link converter 1 to the x264 encoder.\n");
     gst_object_unref(data.pipeline);
     return -1;
   }
