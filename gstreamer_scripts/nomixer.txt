@@ -1,0 +1,1 @@
+gst-launch-1.0 -e rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream_dutty-wine ! decodebin name=decoder decoder. ! videoconvert ! video/x-raw, framerate=25/1, width=200, height=150 ! videoconvert ! videomixer name=mixer mixer. ! ximagesink

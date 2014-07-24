@@ -1,0 +1,12 @@
+gst-launch-1.0 \
+  uridecodebin uri=file:///code/Counter.mp4 ! \
+  videoconvert ! \
+  video/x-raw, format=AYUV ! \
+  videobox left=160 right=160 top=0 bottom=0 ! \
+  videomixer name=mixer sink_1::alpha=1 sink_1::xpos=320 sink_1::ypos=0 ! \
+  videoconvert ! \
+  ximagesink \
+  uridecodebin uri=file:///code/Counter.mp4 ! \
+  videoconvert ! \
+  videobox left=160 right=160 top=0 bottom=0 ! \
+  mixer.

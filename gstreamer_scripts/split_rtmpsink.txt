@@ -1,0 +1,14 @@
+gst-launch-1.0 \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-meu ! \
+  decodebin name=decoder decoder. ! \
+  videoconvert ! \
+  videobox left=160 right=160 top=0 bottom=0 ! \
+  videomixer name=mixer sink_1::alpha=1 sink_1::xpos=320 sink_1::ypos=0 ! \
+  videoconvert ! \
+  x264enc bframes=0 ! flvmux streamable=true ! \
+  rtmpsink location=rtmp://192.168.1.124:1935/yanked/stream-videotestsrc \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-climax ! \
+  decodebin name=decoder1 decoder1. ! \
+  videoconvert ! \
+  videobox left=160 right=160 top=0 bottom=0 ! \
+  mixer.

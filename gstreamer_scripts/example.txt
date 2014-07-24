@@ -1,0 +1,1 @@
+gst-launch-1.0 -e videotestsrc pattern="11" ! video/x-raw, framerate=10/1, width=200, height=150 ! videobox border-alpha=0 top=-100 left=-50 right=-50 bottom=-100 ! videomixer name=mix ! videoconvert ! ximagesink videotestsrc ! video/x-raw, framerate=10/1, width=640, height=360 ! mix.

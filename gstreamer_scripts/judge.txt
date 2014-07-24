@@ -1,0 +1,28 @@
+gst-launch-1.0 \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-climax ! \
+  decodebin name=decoder decoder. ! \
+  videoscale ! \
+  videoconvert ! \
+  video/x-raw, format=AYUV, width=213, height=120 ! \
+  videomixer name=mixer sink_1::xpos=320 sink_1::ypos=0 sink_2::xpos=320 sink_2::ypos=120 sink_3::xpos=320 sink_3::ypos=240 ! \
+  videoconvert ! \
+  ximagesink \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-meu  ! \
+  decodebin name=decoder2 decoder2. ! \
+  videoscale ! \
+  videoconvert ! \
+  video/x-raw, format=AYUV, width=213, height=120 ! \
+  mixer. \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-countdown  ! \
+  decodebin name=decoder3 decoder3. ! \
+  videoscale ! \
+  videoconvert ! \
+  video/x-raw, format=AYUV, width=213, height=120 ! \
+  mixer. \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-kisser ! \
+  decodebin name=decoder1 decoder1. ! \
+  videoconvert ! \
+  video/x-raw, format=AYUV ! \
+  videobox left=160 right=160 top=0 bottom=0 ! \
+  mixer.
+  

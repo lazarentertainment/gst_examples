@@ -1,0 +1,9 @@
+GST_DEBUG=2,*rtmp*:5 gst-launch-1.0 -ve rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-meu ! \
+		     		decodebin ! videoscale ! videoconvert ! \
+				video/x-raw, width=200, height=100 ! \
+				videomixer name=mix sink_1::alpha=1 sink_1::xpos=200 sink_1::ypos=100 ! \
+				videoconvert ! \
+				x264enc bframes=0 ! flvmux streamable=true ! \
+				rtmpsink location='rtmp://192.168.1.124:1935/yanked/stream-videotestsrc' \
+		     		rtmpsrc location=rtmp://192.168.1.124:1935/yanked/rabbit ! \
+				decodebin ! videoconvert ! mix.

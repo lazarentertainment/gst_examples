@@ -1,0 +1,1 @@
+gst-launch-1.0 rtmpsrc location=rtmp://192.168.1.124:1935/yanked/buffer_stream-counter ! decodebin name=decoder decoder. ! videoconvert ! ximagesink
