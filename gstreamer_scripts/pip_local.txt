@@ -1,10 +1,10 @@
 gst-launch-1.0 \
-  uridecodebin uri=file:///code/Counter.mp4 ! \
+  uridecodebin uri=file:///code/fake\ sources/Counter.mp4 ! \
   videoscale ! \
   videoconvert ! \
-  video/x-raw, format=AYUV, width=200, height=150 ! \
-  videomixer name=mixer sink_1::alpha=1 sink_1::xpos=280 sink_1::ypos=210 ! \
+  video/x-raw, width=200, height=150 ! \
+  videomixer name=mixer sink_0::xpos=440 sink_0::ypos=190 sink_0::zorder=100 ! \
   videoconvert ! \
   ximagesink \
-  uridecodebin uri=file:///code/Counter.mp4 ! \
+  uridecodebin uri=file:///code/fake\ sources/Counter.mp4 ! \
   videoconvert ! mixer.

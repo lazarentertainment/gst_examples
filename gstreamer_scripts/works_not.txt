@@ -1,12 +1,12 @@
 gst-launch-1.0 \
-  rtmpsrc location=rtmp://192.168.1.122:1935/yanked/rabbit ! \
-  decodebin name=decoder decoder. ! \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-counter do-timestamp=true ! \
+  decodebin ! \
   videoscale ! \
   videoconvert ! \
-  video/x-raw, format=AYUV, width=200, height=150 ! \
-  videomixer name=mixer sink_1::alpha=1 sink_1::xpos=438 sink_1::ypos=210 ! \
+  video/x-raw, width=200, height=150 ! \
+  videomixer name=mixer sink_1::zorder=100 sink_1::xpos=440 sink_1::ypos=190 ! \
   videoconvert ! \
   ximagesink \
-  rtmpsrc location=rtmp://192.168.1.122:1935/yanked/rabbit ! \
-  decodebin name=decoder1 decoder1. ! \
+  rtmpsrc location=rtmp://192.168.1.124:1935/yanked/stream-meu do-timestamp=true ! \
+  decodebin ! \
   videoconvert ! mixer.
