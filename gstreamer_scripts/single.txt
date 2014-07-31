@@ -1,7 +1,7 @@
 gst-launch-1.0 -v \
-  rtmpsrc location=rtmp://localhost:1935/yanked/stream-countdown ! \
+  rtmpsrc location=rtmp://localhost:1935/yanked/stream-fancy ! \
   decodebin ! \
   videoconvert ! \
   x264enc bframes=0 ! \
   flvmux streamable=true ! \
-  rtmpsink location='rtmp://192.168.1.112:1935/yanked/stream-videotestsrc'
+  rtmpsink location='rtmp://192.168.1.114:1935/yanked/stream-videotestsrc'

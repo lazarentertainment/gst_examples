@@ -1,9 +1,10 @@
-GST_DEBUG=2,*rtmp*:5 gst-launch-1.0 -ve rtmpsrc location=rtmp://localhost:1935/yanked/stream-meu ! \
+#GST_DEBUG=2,*rtmp*:5
+gst-launch-1.0 -ve rtmpsrc location=rtmp://localhost:1935/yanked/stream-counter ! \
 		     		decodebin ! videoscale ! videoconvert ! \
 				video/x-raw, width=212, height=120 ! \
 				videomixer name=mix sink_1::alpha=1 sink_1::xpos=428 sink_1::ypos=240 ! \
 				videoconvert ! \
-				x264enc bframes=0 ! flvmux streamable=true ! \
-				rtmpsink location='rtmp://192.168.1.112:1935/yanked/stream-videotestsrc' \
-		     		rtmpsrc location=rtmp://localhost:1935/yanked/stream-countdown ! \
+				x264enc bframes=0 ! flvmux ! \
+				rtmpsink location='rtmp://192.168.1.114:1935/yanked/stream-videotestsrc' \
+		     		rtmpsrc location=rtmp://localhost:1935/yanked/stream-fancy ! \
 				decodebin ! videoconvert ! mix.
