@@ -11,6 +11,8 @@ typedef struct _CustomData {
   GMainLoop *loop;
 } CustomData;
 
+typedef void (*java_callback)(GMainLoop *);
+
 static void pad_added_handler(GstElement *source, GstPad *pad, CustomData *data) {
   GstPad *sink_pad = gst_element_get_static_pad(data->sink, "sink");
   GstPadLinkReturn retval;
@@ -50,7 +52,7 @@ static void pad_added_handler(GstElement *source, GstPad *pad, CustomData *data)
   gst_object_unref(sink_pad);
 }
 
-static void cb_message (GstBus *bus, GstMessage *msg, CustomData *data) {
+static void cb_message(GstBus *bus, GstMessage *msg, CustomData *data) {
   switch (GST_MESSAGE_TYPE(msg)) {
   case GST_MESSAGE_ERROR: {
     GError *err;
@@ -99,7 +101,7 @@ static void cb_message (GstBus *bus, GstMessage *msg, CustomData *data) {
   }
 }
 
-void videoTestSource(const char* rtmp_source, const char* rtmp_sink) {
+void videoTestSource(const char* rtmp_source, const char* rtmp_sink, java_callback stop_stream_cb) {
   GstElement *test_source, *sink,*encoder, *muxer;
   GstBus *bus;
   GstMessage *message;
@@ -167,11 +169,20 @@ void videoTestSource(const char* rtmp_source, const char* rtmp_sink) {
   gst_bus_add_signal_watch(bus);
   g_signal_connect(bus, "message", G_CALLBACK(cb_message), &data);
 
+  stop_stream_cb(data.loop);
+
   g_main_loop_run(loop);
+  printf("%s", "Main loop stopped running.\n");
   g_main_loop_unref(loop);
   gst_object_unref(bus);
+  gst_element_set_state(data.pipeline, GST_STATE_READY);
   gst_element_set_state(data.pipeline, GST_STATE_NULL);
   gst_object_unref(data.pipeline);
+  printf("%s", "Everything cleaned up.\n");
+}
+
+void stopStream(GMainLoop *loop) {
+  g_main_loop_quit(loop);
 }
 
 const char* showGstVersion() {
