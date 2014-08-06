@@ -1,8 +1,6 @@
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
-import com.sun.jna.Callback;
-import com.sun.jna.Structure;
 
 import java.util.Timer;
 import java.util.TimerTask;
