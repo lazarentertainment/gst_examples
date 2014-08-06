@@ -3,12 +3,6 @@
 #include <stdlib.h>
 #include <gst/gst.h>
 
-typedef struct _Errors {
-  /* char message[255]; */
-  const char *message;
-  int status_code;
-} Errors;
-
 typedef struct _GstContext {
   GstElement *pipeline;
   GstElement *source;
@@ -114,24 +108,21 @@ GstContext* allocate() {
   return context;
 }
 
-Errors setup(const char* rtmp_source, const char* rtmp_sink, GstContext *context) {
+int setup(const char* rtmp_source, const char* rtmp_sink, GstContext *context) {
   GstElement *source, *sink, *encoder, *muxer;
-  Errors error_structure;
 
   source = gst_element_factory_make("rtmpsrc", "source");
   sink = gst_element_factory_make("rtmpsink", "sink");
   encoder = gst_element_factory_make("x264enc", "encoder");
   muxer = gst_element_factory_make("flvmux", "muxer");
 
-
   context->source = gst_element_factory_make("decodebin", "decoder");
   context->sink = gst_element_factory_make("videoconvert", "converter");
   context->pipeline = gst_pipeline_new("contextdriven");
 
   if(!context->pipeline || !source || !sink || !encoder || !muxer || !context->source || !context->sink) {
-    error_structure.message = "Could not create elements.";
-    error_structure.status_code = 500;
-    return error_structure;
+    g_printerr("Could not create elements.\n");
+    return -1;
   }
 
   gst_bin_add_many(GST_BIN(context->pipeline), source, sink, encoder, muxer,\
@@ -142,41 +133,35 @@ Errors setup(const char* rtmp_source, const char* rtmp_sink, GstContext *context
   g_object_set(encoder, "bframes", 0, NULL);
 
   if(!gst_element_link(source, context->source)) {
-    error_structure.message = "Could not link RTMP source to the decoder.";
-    error_structure.status_code = 500;
+    g_printerr("Could not link RTMP source to the decoder.\n");
     gst_object_unref(context->pipeline);
-    return error_structure;
+    return -1;
   }
 
   if(!gst_element_link(context->sink, encoder)) {
-    error_structure.message = "Could not link the converter to the h264 encoder.";
-    error_structure.status_code = 500;
+    g_printerr("Could not link the converter to the h264 encoder.\n");
     gst_object_unref(context->pipeline);
-    return error_structure;
+    return -1;
   }
 
   if(!gst_element_link(encoder, muxer)) {
-    error_structure.message = "Could not link the h264 encoder to the FLV muxer.";
-    error_structure.status_code = 500;
+    g_printerr("Could not link the h264 encoder to the FLV muxer.\n");
     gst_object_unref(context->pipeline);
-    return error_structure;
+    return -1;
   }
 
   if(!gst_element_link(muxer, sink)) {
-    error_structure.message ="Could not link the FLV muxer to the RTMP sink.";
-    error_structure.status_code = 500;
+    g_printerr("Could not link the FLV muxer to the RTMP sink.\n");
     gst_object_unref(context->pipeline);
-    return error_structure;
+    return -1;
   }
 
   g_signal_connect(context->source, "pad-added", G_CALLBACK(pad_added_handler), context);
-  error_structure.status_code = 200;
-  error_structure.message = "Success";
   printf("%s", "Returning successfully...\n");
-  return error_structure;
+  return 0;
 }
 
-void start(GstContext *context) {
+int start(GstContext *context) {
   GstStateChangeReturn return_value;
   GstBus *bus;
   GstMessage *message;
@@ -187,6 +172,7 @@ void start(GstContext *context) {
   if(return_value == GST_STATE_CHANGE_FAILURE) {
     g_printerr("Unable to start playing the pipeline.\n");
     gst_object_unref(context->pipeline);
+    return -1;
   }
   else if(return_value == GST_STATE_CHANGE_NO_PREROLL) {
     context->is_live = TRUE;
@@ -202,10 +188,11 @@ void start(GstContext *context) {
   gst_element_set_state(context->pipeline, GST_STATE_NULL);
   gst_object_unref(context->pipeline);
   free(context);
-
+  return 0;
 }
 
-void stop(GstContext *context) {
+int stop(GstContext *context) {
   printf("%s", "Stopping...\n");
   g_main_loop_quit(context->loop);
+  return 0;
 }
