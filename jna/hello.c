@@ -219,3 +219,10 @@ const char* parameterOut(const char *param) {
   }
   return "Nothing to see here";
 }
+
+void sendArray(int size, char *list[]) {
+  int i;
+  for(i = 0; i < size; i++) {
+    printf("%s\n", list[i]);
+  }
+}

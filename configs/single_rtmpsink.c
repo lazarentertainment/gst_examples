@@ -1,15 +1,17 @@
 #include <gst/gst.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-typedef struct _CustomData {
+typedef struct _GstContext {
   GstElement *pipeline;
   GstElement *source;
   GstElement *sink;
   gboolean is_live;
   GMainLoop *loop;
-} CustomData;
+} GstContext;
 
-static void pad_added_handler(GstElement *source, GstPad *pad, CustomData *data) {
+static void pad_added_handler(GstElement *source, GstPad *pad, GstContext *data) {
   GstPad *sink_pad = gst_element_get_static_pad(data->sink, "sink");
   GstPadLinkReturn retval;
   GstCaps *new_pad_caps = NULL;
@@ -48,7 +50,7 @@ static void pad_added_handler(GstElement *source, GstPad *pad, CustomData *data)
   gst_object_unref(sink_pad);
 }
 
-static void cb_message (GstBus *bus, GstMessage *msg, CustomData *data) {
+static void cb_message (GstBus *bus, GstMessage *msg, GstContext *data) {
   switch (GST_MESSAGE_TYPE(msg)) {
   case GST_MESSAGE_ERROR: {
     GError *err;
@@ -97,86 +99,103 @@ static void cb_message (GstBus *bus, GstMessage *msg, CustomData *data) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  GstElement *source1;
-  GstElement *encoder, *muxer, *sink;
-  GstBus *bus;
-  GstStateChangeReturn return_value;
-  CustomData data;
-  GMainLoop *loop;
+void libInit() {
+  gst_init(NULL, NULL);
+}
 
-  gst_init(&argc, &argv);
+GstContext* allocate() {
+  GstContext* context;
+  context = (GstContext *)malloc(sizeof(GstContext));
+  printf("%s", "Set up the struct and returning the pointer.\n");
+  return context;
+}
 
-  memset(&data, 0, sizeof(data));
-  source1 = gst_element_factory_make("rtmpsrc", "source1");
+int setup(const char *rtmp_source, const char *rtmp_sink, GstContext *context) {
+  GstElement *source, *encoder, *muxer, *sink;
+
+  source = gst_element_factory_make("rtmpsrc", "source");
   encoder = gst_element_factory_make("x264enc", "encoder");
   muxer = gst_element_factory_make("flvmux", "muxer");
   sink = gst_element_factory_make("rtmpsink", "sink");
   
-  data.source = gst_element_factory_make("decodebin", "decoder1");
-  data.sink = gst_element_factory_make("videoconvert", "converter1");
-  data.pipeline = gst_pipeline_new("single");
-  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(data.pipeline), GST_DEBUG_GRAPH_SHOW_MEDIA_TYPE, "afterparse");
+  context->source = gst_element_factory_make("decodebin", "decoder1");
+  context->sink = gst_element_factory_make("videoconvert", "converter1");
+  context->pipeline = gst_pipeline_new("single");
+  GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(context->pipeline), GST_DEBUG_GRAPH_SHOW_MEDIA_TYPE, "afterparse");
 
-  if(!data.pipeline || !source1 || !data.sink || !data.source || !encoder || !muxer || !sink) {
-    g_printerr("Could not build an element\n");
+  if(!context->pipeline || !source || !sink || !encoder || !muxer || !context->source || !context->sink) {
+    g_printerr("Could not create elements.\n");
     return -1;
   }
 
-  gst_bin_add_many(GST_BIN(data.pipeline), source1, data.sink, data.source, encoder, muxer, sink, NULL);
-  g_object_set(source1, "location", "rtmp://192.168.1.124:1935/yanked/rabbit", NULL);
+  gst_bin_add_many(GST_BIN(context->pipeline), source, sink, encoder, muxer,\
+                   context->source, context->sink, NULL);
 
-  if(!gst_element_link(source1, data.source)) {
+  g_object_set(source, "location", rtmp_source, NULL);
+  g_object_set(sink, "location", rtmp_sink, NULL);
+  g_object_set(encoder, "bframes", 0, NULL);
+
+  if(!gst_element_link(source, context->source)) {
     g_printerr("Could not link source to the decode bin.\n");
-    gst_object_unref(data.pipeline);
+    gst_object_unref(context->pipeline);
     return -1;
   }
 
-  if(!gst_element_link(data.sink, encoder)) {
+  if(!gst_element_link(context->sink, encoder)) {
     g_printerr("Could not link converter 1 to the x264 encoder.\n");
-    gst_object_unref(data.pipeline);
+    gst_object_unref(context->pipeline);
     return -1;
   }
 
   if(!gst_element_link(encoder, muxer)) {
     g_printerr("Could not link encoder to the FLV muxer.\n");
-    gst_object_unref(data.pipeline);
+    gst_object_unref(context->pipeline);
     return -1;
   }
 
   if(!gst_element_link(muxer, sink)) {
     g_printerr("Could not link FLV muxer to the RTMP sink.\n");
-    gst_object_unref(data.pipeline);
+    gst_object_unref(context->pipeline);
     return -1;
   }
 
-  g_object_set(encoder, "bframes", 0, NULL);
-  g_object_set(muxer, "streamable", TRUE, NULL);
-  g_object_set(sink, "location", "rtmp://192.168.1.124:1935/yanked/rabbit-echo", NULL);
+  g_signal_connect(context->source, "pad-added", G_CALLBACK(pad_added_handler), context);
+  return 0;
+}
 
-  g_signal_connect(data.source, "pad-added", G_CALLBACK(pad_added_handler), &data);
-  bus = gst_element_get_bus(data.pipeline);
-  return_value = gst_element_set_state(data.pipeline, GST_STATE_PLAYING);
+int start(GstContext *context) {
+  GstBus *bus;
+  GstStateChangeReturn return_value;
+  GstMessage *message;
+
+  bus = gst_element_get_bus(context->pipeline);
+  return_value = gst_element_set_state(context->pipeline, GST_STATE_PLAYING);
 
   if(return_value == GST_STATE_CHANGE_FAILURE) {
     g_printerr("Unable to set the pipeline to the playing state.\n");
-    gst_object_unref(data.pipeline);
+    gst_object_unref(context->pipeline);
     return -1;
   }
   else if(return_value == GST_STATE_CHANGE_NO_PREROLL) {
-    data.is_live = TRUE;
+    context->is_live = TRUE;
   }
 
-  loop = g_main_loop_new(NULL, FALSE);
-  data.loop = loop;
+  context->loop = g_main_loop_new(NULL, FALSE);
 
   gst_bus_add_signal_watch(bus);
-  g_signal_connect(bus, "message", G_CALLBACK(cb_message), &data);
+  g_signal_connect(bus, "message", G_CALLBACK(cb_message), context);
 
-  g_main_loop_run(loop);
-  g_main_loop_unref(loop);
+  g_main_loop_run(context->loop);
+  g_main_loop_unref(context->loop);
   gst_object_unref(bus);
-  gst_element_set_state(data.pipeline, GST_STATE_NULL);
-  gst_object_unref(data.pipeline);
+  gst_element_set_state(context->pipeline, GST_STATE_NULL);
+  gst_object_unref(context->pipeline);
+  free(context);
+  return 0;
+}
+
+int stop(GstContext *context) {
+  printf("%s", "Stopping...\n");
+  g_main_loop_quit(context->loop);
   return 0;
 }
